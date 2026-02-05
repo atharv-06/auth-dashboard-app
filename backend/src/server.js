@@ -1,63 +1,61 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const helmet = require("helmet");
+const morgan = require("morgan");
 require("dotenv").config();
 
 const authRoutes = require("./routes/auth.routes");
 const userRoutes = require("./routes/user.routes");
 const taskRoutes = require("./routes/task.routes");
 
+const errorHandler = require("./middleware/errorHandler");
+
 const app = express();
 
-/* =====================
-   Global Middleware
-===================== */
+if (!process.env.MONGO_URI || !process.env.JWT_SECRET) {
+  console.error("❌ Missing required environment variables");
+  process.exit(1);
+}
+
+app.use(helmet());
+
 app.use(
   cors({
-    origin: "*", // restrict this in production
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    credentials: true,
   })
 );
 
+app.use(morgan("dev"));
 app.use(express.json());
-
-/* =====================
-   API Routes
-===================== */
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/me", userRoutes);
 app.use("/api/v1/tasks", taskRoutes);
-
-/* =====================
-   Health Check
-===================== */
 app.get("/api/v1/health", (req, res) => {
   res.json({
+    success: true,
     status: "OK",
     uptime: process.uptime(),
     timestamp: new Date(),
   });
 });
 
-/* =====================
-   Global Error Handler
-===================== */
-app.use((err, req, res, next) => {
-  console.error("Unhandled Error:", err.message);
-
-  res.status(err.status || 500).json({
-    message: err.message || "Internal server error",
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "Route not found",
   });
 });
 
-/* =====================
-   Database + Server
-===================== */
+app.use(errorHandler);
+
+
 const PORT = process.env.PORT || 5000;
 
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => {
+const startServer = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
     console.log("✅ MongoDB Connected");
 
     const server = app.listen(PORT, () => {
@@ -70,8 +68,11 @@ mongoose
       await mongoose.connection.close();
       server.close(() => process.exit(0));
     });
-  })
-  .catch((err) => {
+
+  } catch (err) {
     console.error("❌ MongoDB connection failed:", err.message);
     process.exit(1);
-  });
+  }
+};
+
+startServer();
