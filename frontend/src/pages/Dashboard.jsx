@@ -4,13 +4,10 @@ import api from "../api/axios";
 export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [tasks, setTasks] = useState([]);
-
   const [title, setTitle] = useState("");
   const [search, setSearch] = useState("");
-
   const [editingId, setEditingId] = useState(null);
   const [editingTitle, setEditingTitle] = useState("");
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -88,49 +85,53 @@ export default function Dashboard() {
   /* ================= UI ================= */
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
+    <div className="min-h-screen bg-gray-100 px-3 sm:px-6 py-6">
       <div className="max-w-4xl mx-auto space-y-6">
 
-        {/* Header */}
-        <div className="bg-white rounded-lg p-6 shadow flex justify-between items-center">
+        {/* ===== Header ===== */}
+        <div className="bg-white rounded-lg p-4 sm:p-6 shadow flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
           <div>
-            <h1 className="text-2xl font-bold">Dashboard</h1>
+            <h1 className="text-xl sm:text-2xl font-bold">Dashboard</h1>
             {user && (
-              <p className="text-gray-600 text-sm">
+              <p className="text-gray-600 text-xs sm:text-sm">
                 {user.name} • {user.email}
               </p>
             )}
           </div>
+
           <button
             onClick={logout}
-            className="text-red-600 hover:underline text-sm"
+            className="text-red-600 hover:underline text-sm self-start sm:self-auto"
           >
             Logout
           </button>
         </div>
 
-        {/* Stats */}
+        {/* ===== Stats ===== */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="bg-white p-4 rounded shadow">
             <p className="text-gray-500 text-sm">Total Tasks</p>
-            <p className="text-2xl font-bold">{tasks.length}</p>
+            <p className="text-xl sm:text-2xl font-bold">
+              {tasks.length}
+            </p>
           </div>
         </div>
 
-        {/* Task Card */}
-        <div className="bg-white rounded-lg shadow p-6">
+        {/* ===== Task Card ===== */}
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6">
 
           {/* Add Task */}
           <div className="flex flex-col sm:flex-row gap-3 mb-4">
             <input
-              className="border p-2 rounded flex-1"
+              className="border p-2 rounded w-full"
               placeholder="Add new task"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
+
             <button
               onClick={addTask}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full sm:w-auto"
             >
               Add Task
             </button>
@@ -148,7 +149,7 @@ export default function Dashboard() {
             <p className="text-red-500 text-sm mb-3">{error}</p>
           )}
 
-          {/* Task List */}
+          {/* ===== Task List ===== */}
           {loading ? (
             <p className="text-sm text-gray-500">Loading tasks...</p>
           ) : filteredTasks.length === 0 ? (
@@ -160,16 +161,16 @@ export default function Dashboard() {
               {filteredTasks.map((task) => (
                 <li
                   key={task._id}
-                  className="flex justify-between items-center border rounded p-3 hover:bg-gray-50"
+                  className="flex flex-col sm:flex-row sm:justify-between sm:items-center border rounded p-3 gap-3"
                 >
                   {editingId === task._id ? (
                     <input
-                      className="border p-1 rounded flex-1 mr-2"
+                      className="border p-1 rounded w-full sm:flex-1"
                       value={editingTitle}
                       onChange={(e) => setEditingTitle(e.target.value)}
                     />
                   ) : (
-                    <span>{task.title}</span>
+                    <span className="break-words">{task.title}</span>
                   )}
 
                   <div className="flex gap-3 text-sm">
